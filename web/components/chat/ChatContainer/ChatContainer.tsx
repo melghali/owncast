@@ -1,5 +1,5 @@
 import { Virtuoso } from 'react-virtuoso';
-import { useState, useMemo, useRef, CSSProperties, FC, useEffect, } from 'react';
+import { useState, useMemo, useRef, CSSProperties, FC, useEffect, useCallback, } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import {
   ConnectedClientInfoEvent,
@@ -86,7 +86,7 @@ export const ChatContainer: FC<ChatContainerProps> = ({
 }) => {
   const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const [currentItemIndex, setCurrentItemIndex] = useState(-1)
+  const [currentItemIndex, setCurrentItemIndex] = useState(-1);
 
 
   const chatContainerRef = useRef(null);
@@ -228,6 +228,47 @@ export const ChatContainer: FC<ChatContainerProps> = ({
     }
   };
 
+  const keyDownCallback = useCallback(
+    (e) => {
+      let nextIndex = null
+
+      if (e.code === 'ArrowUp') {
+        nextIndex = Math.max(0, currentItemIndex - 1)
+      } else if (e.code === 'ArrowDown') {
+        nextIndex = Math.min(99, currentItemIndex + 1)
+      }
+
+      if (nextIndex !== null) {
+        chatMessageRef.current.scrollIntoView({
+          index: nextIndex,
+          behavior: 'auto',
+          done: () => {
+            setCurrentItemIndex(nextIndex)
+            console.log("set index done", nextIndex)
+          },
+        })
+        e.preventDefault()
+      }
+    }
+    // console.log("curr itme", currentItemIndex)
+    // console.log("next", nextIndex)
+    ,
+    [currentItemIndex, chatMessageRef]
+  )
+  const scrollerRef = useCallback(
+    (element) => {
+      if (element) {
+        console.log("Add keydown listener")
+        element.addEventListener('keydown', keyDownCallback)
+        chatMessageRef.current = element
+      } else {
+        console.log("Remove keydown listener")
+        chatMessageRef.current.removeEventListener('keydown', keyDownCallback)
+      }
+    },
+    [keyDownCallback]
+  )
+
   const scrollChatToBottom = ref => {
     clearTimeout(scrollToBottomDelay.current);
     scrollToBottomDelay.current = setTimeout(() => {
@@ -257,17 +298,6 @@ export const ChatContainer: FC<ChatContainerProps> = ({
           ref={chatContainerRef}
           data={messages}
           itemContent={(index, message) => getViewForMessage(index, message)}
-          // (
-          //   <div
-          //   style={{
-          //     backgroundColor: 'red',
-          //     borderColor: index === currentItemIndex ? 'blue' : 'transparent',
-          //     // borderSize: '1px',
-          //     borderStyle: 'solid',
-          //     padding: '0.5rem 0.2rem',
-          //   }}
-          // ></div>
-          // )}
           initialTopMostItemIndex={messages.length - 1}
           followOutput={() => {
             if (isAtBottom) {
@@ -289,6 +319,7 @@ export const ChatContainer: FC<ChatContainerProps> = ({
               setShowScrollToBottomButton(true);
             }
           }}
+          scrollerRef={scrollerRef}
         />
         {showScrollToBottomButton && (
           <ScrollToBotBtn
