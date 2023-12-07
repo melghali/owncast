@@ -1,5 +1,5 @@
 import { Virtuoso } from 'react-virtuoso';
-import { useState, useMemo, useRef, CSSProperties, FC, useEffect } from 'react';
+import { useState, useMemo, useRef, CSSProperties, FC, useEffect, } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import {
   ConnectedClientInfoEvent,
@@ -86,8 +86,11 @@ export const ChatContainer: FC<ChatContainerProps> = ({
 }) => {
   const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
+  const [currentItemIndex, setCurrentItemIndex] = useState(-1)
+
 
   const chatContainerRef = useRef(null);
+  const chatMessageRef = useRef(null);
   const scrollToBottomDelay = useRef(null);
 
   const collapsedIndexes: boolean[] = [];
@@ -184,6 +187,7 @@ export const ChatContainer: FC<ChatContainerProps> = ({
         isAuthorBot={message.user?.isBot}
         isAuthorAuthenticated={message.user?.authenticated}
         key={message.id}
+        isSelected={index === currentItemIndex}
       />
     );
   };
@@ -253,6 +257,17 @@ export const ChatContainer: FC<ChatContainerProps> = ({
           ref={chatContainerRef}
           data={messages}
           itemContent={(index, message) => getViewForMessage(index, message)}
+          // (
+          //   <div
+          //   style={{
+          //     backgroundColor: 'red',
+          //     borderColor: index === currentItemIndex ? 'blue' : 'transparent',
+          //     // borderSize: '1px',
+          //     borderStyle: 'solid',
+          //     padding: '0.5rem 0.2rem',
+          //   }}
+          // ></div>
+          // )}
           initialTopMostItemIndex={messages.length - 1}
           followOutput={() => {
             if (isAtBottom) {

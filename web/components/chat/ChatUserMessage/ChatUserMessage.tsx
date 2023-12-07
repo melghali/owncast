@@ -37,6 +37,7 @@ export type ChatUserMessageProps = {
   isAuthorModerator: boolean;
   isAuthorAuthenticated: boolean;
   isAuthorBot: boolean;
+  isSelected: boolean
 };
 
 export type UserTooltipProps = {
@@ -64,6 +65,7 @@ export const ChatUserMessage: FC<ChatUserMessageProps> = ({
   isAuthorModerator,
   isAuthorAuthenticated,
   isAuthorBot,
+  isSelected,
 }) => {
   const { id: messageId, body, user, timestamp } = message;
   const { id: userId, displayName, displayColor } = user;
@@ -95,7 +97,10 @@ export const ChatUserMessage: FC<ChatUserMessageProps> = ({
         className={cn(styles.root, {
           [styles.ownMessage]: sentBySelf,
         })}
-        style={{ borderColor: color }}
+        style={{ 
+          borderColor: isSelected ? 'white' : color, 
+          borderStyle: isSelected ? 'solid' : null,
+        }}
       >
         <div className={styles.background} style={{ color }} />
 
