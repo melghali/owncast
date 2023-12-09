@@ -86,7 +86,7 @@ export const ChatContainer: FC<ChatContainerProps> = ({
 }) => {
   const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const [currentItemIndex, setCurrentItemIndex] = useState(-1);
+  const [currentItemIndex, setCurrentItemIndex] = useState(messages.length - 1);
 
 
   const chatContainerRef = useRef(null);
@@ -175,6 +175,7 @@ export const ChatContainer: FC<ChatContainerProps> = ({
 
   const getUserChatMessageView = (index: number, message: ChatMessage) => {
     const isAuthorModerator = checkIsModerator(message);
+    // console.log("index", index, "currIndex", keyIndex)
 
     return (
       <ChatUserMessage
@@ -187,7 +188,7 @@ export const ChatContainer: FC<ChatContainerProps> = ({
         isAuthorBot={message.user?.isBot}
         isAuthorAuthenticated={message.user?.authenticated}
         key={message.id}
-        isSelected={index === currentItemIndex}
+        isSelected={index === keyIndex}
       />
     );
   };
@@ -228,41 +229,27 @@ export const ChatContainer: FC<ChatContainerProps> = ({
     }
   };
 
+  let keyIndex = 3
+
   const keyDownCallback = useCallback(
     (e) => {
-      let nextIndex = null
-
       if (e.code === 'ArrowUp') {
-        nextIndex = Math.max(0, currentItemIndex - 1)
+        keyIndex =  Math.max(0, keyIndex - 1)
+        console.log("arrow up", keyIndex)
       } else if (e.code === 'ArrowDown') {
-        nextIndex = Math.min(99, currentItemIndex + 1)
+        keyIndex = Math.min(messages.length - 1, keyIndex + 1)
+        console.log("arrow down", keyIndex)
       }
-
-      if (nextIndex !== null) {
-        chatMessageRef.current.scrollIntoView({
-          index: nextIndex,
-          behavior: 'auto',
-          done: () => {
-            setCurrentItemIndex(nextIndex)
-            console.log("set index done", nextIndex)
-          },
-        })
-        e.preventDefault()
-      }
-    }
-    // console.log("curr itme", currentItemIndex)
-    // console.log("next", nextIndex)
-    ,
+      {MessagesTable}
+    },
     [currentItemIndex, chatMessageRef]
   )
   const scrollerRef = useCallback(
     (element) => {
       if (element) {
-        console.log("Add keydown listener")
         element.addEventListener('keydown', keyDownCallback)
         chatMessageRef.current = element
       } else {
-        console.log("Remove keydown listener")
         chatMessageRef.current.removeEventListener('keydown', keyDownCallback)
       }
     },
@@ -302,10 +289,9 @@ export const ChatContainer: FC<ChatContainerProps> = ({
           followOutput={() => {
             if (isAtBottom) {
               setShowScrollToBottomButton(false);
-              scrollChatToBottom(chatContainerRef);
+              scrollChatToBottom(chatContainerRef); 
               return 'smooth';
             }
-
             return false;
           }}
           alignToBottom
@@ -376,7 +362,7 @@ export const ChatContainer: FC<ChatContainerProps> = ({
       // eslint-disable-next-line react/no-unstable-nested-components
       fallbackRender={({ error, resetErrorBoundary }) => (
         <ComponentError
-          componentName="ChatContainer"
+          componentName="`ChatContainer`"
           message={error.message}
           retryFunction={resetErrorBoundary}
         />
